@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "649299280",
+    "project_id": "directdetection",
+    "storage_bucket": "directdetection.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649299280:android:90e6e1636a6ac3efc99855",
+        "android_client_info": {
+          "package_name": "com.sweetlove.directdetection"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1YMExYbu4heJBaf_864PnYum1hfg17dc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

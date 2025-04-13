@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main_activity"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/signin_background"
+    tools:context=".MainActivity">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Direction Dectection"
+        android:textSize="65dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:padding="15px"
+        android:textColor="@color/white"
+        android:fontFamily="@font/montserrat_bold"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign in"
+        android:backgroundTint="#2AFFFFFF"
+        android:textColor="#FFFFFF"
+        android:layout_marginStart="15pt"
+        android:layout_marginEnd="15pt"
+        android:padding="18dp"
+        android:layout_marginTop="105pt"
+        android:textSize="20dp"
+        android:id="@+id/signin_btn"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create an account"
+        android:textColor="@color/white"
+        android:layout_marginTop="18dp"
+        android:id="@+id/create_account"
+        />
+</LinearLayout>
+
+
+</RelativeLayout>
