@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="#222222"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Tiêu đề -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recognization application"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Khung camera -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/border_blue">
+
+        <ImageView
+            android:id="@+id/cameraView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+    </FrameLayout>
+
+    <!-- Kết quả nhận diện -->
+    <TextView
+        android:id="@+id/resultText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Một cái cốc trên bàn"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#555555"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:drawablePadding="8dp"
+        android:layout_margin="8dp"
+        android:background="@drawable/rounded_grey_background" />
+
+    <!-- Thanh điều hướng dưới -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="12dp">
+
+        <ImageButton
+            android:id="@+id/helpButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_help"
+            android:background="@null"
+            android:contentDescription="Help" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/settingsButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_settings"
+            android:background="@null"
+            android:contentDescription="Settings" />
+    </LinearLayout>
+
+</LinearLayout>
