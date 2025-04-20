@@ -34,6 +34,11 @@ android {
         viewBinding = true
     }
 }
+buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
 
 dependencies {
 
@@ -44,8 +49,17 @@ dependencies {
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    // Add the dependency for the Firebase Authentication library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-auth")
+    // https://mvnrepository.com/artifact/com.google.firebase/firebase-firestore
+    implementation("com.google.firebase:firebase-firestore:25.1.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -14,5 +14,13 @@
         android:text="Hello"
         android:textSize="50dp"
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25pt"
+        android:text="Logout"
+        android:background="@color/white"
+        android:id="@+id/logout_btn"
+        />
 
 </RelativeLayout>
