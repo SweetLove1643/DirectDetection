@@ -26,7 +26,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sign in"
+        android:text="Đăng nhập"
         android:backgroundTint="#2AFFFFFF"
         android:textColor="#FFFFFF"
         android:layout_marginStart="15pt"
@@ -39,7 +39,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create an account"
+        android:text="Tạo tài khoản"
         android:textColor="@color/white"
         android:layout_marginTop="18dp"
         android:id="@+id/create_account"

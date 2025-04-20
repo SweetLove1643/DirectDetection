@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/register_activity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".Controller.RegisterController"
-        android:padding="16dp"
+        tools:context=".Controller.RegisterActivity"
         android:gravity="center"
+        android:padding="10pt"
         android:background="@drawable/signin_background">
 
         <LinearLayout
@@ -45,7 +41,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Register"
+                    android:text="Đăng kí"
                     android:textColor="@color/white"
                     android:fontFamily="@font/montserrat_bold"
                     android:textSize="47dp"
@@ -54,7 +50,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create your new account"
+                    android:text="Hãy tạo tài khoản mới"
                     android:textColor="@color/white"
                     android:fontFamily="@font/montserrat_regular"
                     android:textSize="23dp"
@@ -65,7 +61,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25pt"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -73,9 +68,9 @@
                     android:id="@+id/name_input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="26dp"
                     android:background="@drawable/rounded_corner"
-                    android:hint="Full name"
+                    android:hint="Họ và tên"
                     android:inputType="text"
                     android:textColor="@color/white"
                     android:padding="18dp"
@@ -83,12 +78,12 @@
                     android:textSize="20sp" />
 
                 <EditText
-                    android:id="@+id/username_input"
+                    android:id="@+id/email_input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/rounded_corner"
-                    android:hint="Username"
+                    android:hint="Email"
                     android:textColor="@color/white"
                     android:inputType="text"
                     android:padding="18dp"
@@ -101,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/rounded_corner"
-                    android:hint="Password"
+                    android:hint="Mật khẩu"
                     android:inputType="text"
                     android:textColor="@color/white"
                     android:padding="18dp"
@@ -117,13 +112,13 @@
                     android:textColor="#FFFFFF"
                     />
                 <EditText
-                    android:id="@+id/family_username_input"
+                    android:id="@+id/family_email_input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/rounded_corner"
                     android:visibility="gone"
-                    android:hint="Family username"
+                    android:hint="Email của người thân"
                     android:inputType="text"
                     android:textColor="@color/white"
                     android:padding="18dp"
@@ -138,14 +133,14 @@
                 <CheckBox
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Remenber me"
+                    android:text="Nhớ mật khẩu"
                     android:id="@+id/rememberme_checkbox"
                     android:textColor="@color/white"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:text="Forgot Password ?"
+                    android:text="Quên mật khẩu ?"
                     android:layout_marginLeft="55pt"
                     android:id="@+id/forgotpassword_btn"
                     />
@@ -155,7 +150,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign up"
+                android:text="Đăng kí"
                 android:backgroundTint="@color/white"
                 android:textColor="#3B84F1"
                 android:padding="18dp"
@@ -173,7 +168,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="Already have an account ?"
+                    android:text="Bạn đã có tài khoản ?"
                     android:textColor="@color/white"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -189,5 +184,3 @@
         </LinearLayout>
 
     </RelativeLayout>
-
-</ScrollView>
