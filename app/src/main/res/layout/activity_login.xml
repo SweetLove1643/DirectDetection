@@ -8,7 +8,7 @@
     android:background="@drawable/signin_background"
     android:gravity="center"
     android:padding="16dp"
-    tools:context=".Controller.LoginController">
+    tools:context=".Controller.LoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,26 +42,26 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Welcome Back"
+                android:text="Chào mừng trở lại"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_bold"
-                android:textSize="47dp"
+                android:textSize="40dp"
                 android:gravity="center"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Login to your account"
+                android:text="Đăng nhập với tài khoản của bạn"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_regular"
-                android:textSize="23dp"
+                android:textSize="20dp"
                 android:gravity="center"
                 />
         </LinearLayout>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username"
+            android:hint="Email"
             android:layout_marginTop="32dp"
             android:textColorHint="@color/white"
             android:textColor="@color/white"
@@ -69,11 +69,11 @@
             android:background="@drawable/rounded_corner"
             android:padding="18dp"
             android:inputType="text"
-            android:id="@+id/username_input"/>
+            android:id="@+id/email_input"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
+            android:hint="Mật khẩu"
             android:layout_marginTop="16dp"
             android:textColorHint="@color/white"
             android:textColor="@color/white"
@@ -88,14 +88,14 @@
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Remenber me"
+                android:text="Nhớ mật khẩu"
                 android:id="@+id/rememberme_checkbox"
                 android:textColor="@color/white"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:text="Forgot Password ?"
+                android:text="Quên mật khẩu ?"
                 android:layout_marginLeft="55pt"
                 android:id="@+id/forgotpassword_textview"
                 />
@@ -105,7 +105,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login"
+            android:text="Đăng nhập"
             android:backgroundTint="@color/white"
             android:textColor="#3B84F1"
             android:padding="18dp"
@@ -131,7 +131,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Or continue with"
+                android:text="Hoặc tiếp tục với"
                 android:textSize="18sp"
                 android:textColor="@color/white"/>
 
@@ -171,7 +171,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="Don't have account ?"
+                android:text="Chưa có tài khoản ?"
                 android:textColor="@color/white"/>
             <TextView
                 android:layout_width="wrap_content"
