@@ -14,6 +14,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.credentials.GetCredentialRequest;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -23,6 +24,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,6 +33,16 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.sweetlove.directdetection.R;
+import android.os.Bundle;
+import android.util.Log;
+import androidx.credentials.Credential;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.exceptions.GetCredentialException;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 public class LoginActivity extends AppCompatActivity {
     private String TAG = this.getClass().getSimpleName().toString();
@@ -98,60 +110,52 @@ public class LoginActivity extends AppCompatActivity {
 
         login_btn.setOnClickListener(v -> loginWithEmail());
 
-        gg_login.setOnClickListener(v -> loginWithGoogle());
+//        gg_login.setOnClickListener(v -> loginWithGoogle());
 
 
     }
 
-    private void loginWithGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            try {
-                GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(data).getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
-            } catch (ApiException e) {
-                Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+    // Instantiate a Google sign-in request
+    GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(true)
+            .setServerClientId(getString(R.string.default_web_client_id))
+            .build();
+
+    // Create the Credential Manager request
+    GetCredentialRequest request = new GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build();
+    private void handleSignIn(Credential credential) {
+        // Check if credential is of type Google ID
+        if (credential instanceof CustomCredential customCredential
+                && credential.getType().equals(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
+            // Create Google ID Token
+            Bundle credentialData = customCredential.getData();
+            GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credentialData);
+
+            // Sign in to Firebase with using the token
+            firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
+        } else {
+            Log.w(TAG, "Credential is not of type Google ID!");
         }
     }
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mauth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        String userId = mauth.getCurrentUser().getUid();
-                        db.collection("users").document(userId)
-                                .get()
-                                .addOnCompleteListener(task1 -> {
-                                    if (task1.isSuccessful()) {
-                                        DocumentSnapshot document = task1.getResult();
-                                        if (!document.exists()) {
-                                            // Điều hướng để nhập thông tin bổ sung
-                                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                                            intent.putExtra("email", acct.getEmail());
-                                            intent.putExtra("fullname", acct.getDisplayName());
-                                            startActivity(intent);
-                                        } else {
-                                            String role = document.getString("role");
-                                            if (role.equals("Người dùng")) {
-                                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                                            } else if (role.equals("Người thân")) {
-                                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                                            }
-                                            finish();
-                                        }
-                                    } else {
-                                        Toast.makeText(LoginActivity.this, "Lỗi: " + task1.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                        Log.d(TAG, "signInWithCredential:success");
+                        FirebaseUser user = mauth.getCurrentUser();
+                        if (user != null) {
+                            Log.d(TAG, "User: " + user.getEmail());
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                            finish();
+                        }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Xác thực thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.w(TAG, "signInWithCredential:failure", task.getException());
+                        Toast.makeText(LoginActivity.this, "Đăng nhập Google thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
