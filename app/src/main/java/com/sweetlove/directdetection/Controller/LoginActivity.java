@@ -30,7 +30,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,7 +38,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.sweetlove.directdetection.MainActivity;
 import com.sweetlove.directdetection.R;
 
 import java.util.HashMap;
@@ -62,16 +60,18 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mauth.getCurrentUser();
-        if(currentUser != null){
-            Intent home_form = new Intent(getApplicationContext(), HomeActivity.class);
-            startActivity(home_form);
-        }
+
+//        // Check if user is signed in (non-null) and update UI accordingly.
+//        FirebaseUser currentUser = mauth.getCurrentUser();
+//        if(currentUser != null){
+//            Intent home_form = new Intent(getApplicationContext(), HomeActivity.class);
+//            startActivity(home_form);
+//        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
@@ -160,16 +160,24 @@ public class LoginActivity extends AppCompatActivity {
 
         gg_login.setOnClickListener(v -> startGoogleSignIn());
 
+        new android.os.Handler().post(() -> {
+            SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String email_saved = preferences.getString("email", null);
+            String password_saved = preferences.getString("password", null);
+            boolean rememberMe = preferences.getBoolean("rememberMe", false);
+            if (rememberMe && email_saved != null && password_saved != null) {
+                try {
+                    loginWithEmail(email_saved, password_saved);
+                } catch (Exception e) {
+                    Log.e(TAG, "Tự động đăng nhập thất bại", e);
+                    Toast.makeText(LoginActivity.this, "Tự động đăng nhập thất bại, vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
 
-        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String email_saved = preferences.getString("email", null);
-        String password_saved = preferences.getString("password", null);
-        boolean rememberMe = preferences.getBoolean("rememberMe", false);
-        if (rememberMe) {
-            // Tiến hành đăng nhập tự động bằng thông tin đã lưu
-            loginWithEmail(email_saved, password_saved);
-        }
-
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.clear();
+                    editor.apply();
+                }
+            }
+        });
 
     }
     private void Senforgotpassword(){
@@ -253,18 +261,26 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mauth.getCurrentUser();
+                            if (user == null) {
+                                Toast.makeText(LoginActivity.this, "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
+                                clearSavedCredentials();
+                                return;
+                            }
 
                             String userId = mauth.getCurrentUser().getUid();
+                            Log.d(TAG, "Có dữ liệu người dùng");
                             // Lấy thông tin người dùng từ Firestore
                             db.collection("users").document(userId)
                                     .get()
                                     .addOnCompleteListener(task1 -> {
                                         if (task1.isSuccessful()) {
+                                            Log.d(TAG, "Có dữ liệu người dùng1");
                                             DocumentSnapshot document = task1.getResult();
                                             if (document.exists()) {
                                                 String role = document.getString("role");
                                                 if (role.equals("Người dùng")) {
-                                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                                    Log.d(TAG, "Có dữ liệu người dùng2");
+                                                    startActivity(new Intent(LoginActivity.this, SettingsActivity.class));
                                                 } else if (role.equals("Người thân")) {
                                                     startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                                 }
@@ -273,14 +289,22 @@ public class LoginActivity extends AppCompatActivity {
                                                 Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
                                             }
                                         } else {
+                                            Log.d(TAG, "K Có dữ liệu người dùng");
                                             Toast.makeText(LoginActivity.this, "Lỗi: " + task1.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         } else {
                             Log.w(TAG, "Đăng nhập thất bại: " + task.getException().getMessage());
-                            Toast.makeText(LoginActivity.this, "Sai thông tin đăng nhập", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Sai thông tin đăng nhập hoặc phiên đã hết hạn", Toast.LENGTH_SHORT).show();
+                            clearSavedCredentials();
                         }
                     }
                 });
+    }
+    private void clearSavedCredentials() {
+        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
     }
 }
