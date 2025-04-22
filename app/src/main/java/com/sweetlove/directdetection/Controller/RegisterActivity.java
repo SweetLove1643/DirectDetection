@@ -154,15 +154,15 @@ public class RegisterActivity extends AppCompatActivity {
                             user.put("email", email);
                             user.put("role", role);
 
-                            // Gửi email xác minh (nếu cần)
-                            firebaseUser.sendEmailVerification()
-                                    .addOnCompleteListener(verifyTask -> {
-                                        if (verifyTask.isSuccessful()) {
-                                            Toast.makeText(RegisterActivity.this, "Email xác minh đã được gửi", Toast.LENGTH_SHORT).show();
-                                        } else {
-                                            Log.e(TAG, "Lỗi gửi email xác minh: ", verifyTask.getException());
-                                        }
-                                    });
+//                            // Gửi email xác minh (nếu cần)
+//                            firebaseUser.sendEmailVerification()
+//                                    .addOnCompleteListener(verifyTask -> {
+//                                        if (verifyTask.isSuccessful()) {
+//                                            Toast.makeText(RegisterActivity.this, "Email xác minh đã được gửi", Toast.LENGTH_SHORT).show();
+//                                        } else {
+//                                            Log.e(TAG, "Lỗi gửi email xác minh: ", verifyTask.getException());
+//                                        }
+//                                    });
 
                             // Lưu thông tin người dùng vào Firestore
                             db.collection("users").document(userId)

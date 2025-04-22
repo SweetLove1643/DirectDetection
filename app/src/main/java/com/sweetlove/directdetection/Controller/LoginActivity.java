@@ -3,9 +3,11 @@ package com.sweetlove.directdetection.Controller;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -36,6 +39,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.sweetlove.directdetection.MainActivity;
 import com.sweetlove.directdetection.R;
 
 import java.util.HashMap;
@@ -142,6 +146,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(register_form);
         });
         back_btn.setOnClickListener(v -> finish());
+        forgetpassword.setOnClickListener(v -> Senforgotpassword());
 
 
 
@@ -155,6 +160,7 @@ public class LoginActivity extends AppCompatActivity {
 
         gg_login.setOnClickListener(v -> startGoogleSignIn());
 
+
         SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String email_saved = preferences.getString("email", null);
         String password_saved = preferences.getString("password", null);
@@ -165,6 +171,38 @@ public class LoginActivity extends AppCompatActivity {
         }
 
 
+    }
+    private void Senforgotpassword(){
+        // Tạo EditText để nhập email
+        final EditText emailEditText = new EditText(this);
+        emailEditText.setHint("Nhập email của bạn");
+        emailEditText.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+
+        // Tạo AlertDialog
+        new AlertDialog.Builder(this)
+                .setTitle("Quên mật khẩu")
+                .setView(emailEditText)
+                .setPositiveButton("Xác nhận", (dialog, which) -> {
+                    String email = emailEditText.getText().toString();
+                    if (isValidEmail(email)) {
+                        mauth.sendPasswordResetEmail(email)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(LoginActivity.this, "Email đặt lại mật khẩu đã được gửi", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "Lỗi: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     private void startGoogleSignIn(){
