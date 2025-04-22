@@ -1,5 +1,6 @@
 package com.sweetlove.directdetection.Controller;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -28,6 +29,10 @@ public class HomeActivity extends AppCompatActivity {
 
         logout_btn.setOnClickListener(v -> {
             mauth.signOut();
+            SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.clear();
+            editor.apply();
             finish();
         });
 

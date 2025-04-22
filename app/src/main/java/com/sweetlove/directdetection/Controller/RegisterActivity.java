@@ -66,12 +66,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         usertype = findViewById(R.id.spinner_usertype);
 
-        forgotpassword = findViewById(R.id.forgotpassword_btn);
         signin = findViewById(R.id.signin_btn);
 
         signup = findViewById(R.id.signup_btn);
         back_btn = findViewById(R.id.back_btn);
-        rememberme = findViewById(R.id.rememberme_checkbox);
 
         String[] userTypes = {"Người dùng", "Người thân"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(

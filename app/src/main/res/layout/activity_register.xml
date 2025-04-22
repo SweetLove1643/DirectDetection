@@ -127,25 +127,6 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nhớ mật khẩu"
-                    android:id="@+id/rememberme_checkbox"
-                    android:textColor="@color/white"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:text="Quên mật khẩu ?"
-                    android:layout_marginLeft="55pt"
-                    android:id="@+id/forgotpassword_btn"
-                    />
-
-            </LinearLayout>
 
             <Button
                 android:layout_width="match_parent"
