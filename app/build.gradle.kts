@@ -63,12 +63,28 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation(libs.camera.view)
 
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.play.services.auth)
+
+    // CameraX core
+    implementation("androidx.camera:camera-core:1.3.4")
+    // CameraX Camera2 implementation
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    // CameraX lifecycle
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    // CameraX view (cho PreviewView)
+    implementation("androidx.camera:camera-view:1.3.4")
+
+    // ONNX Runtime (đã có từ trước)
+    implementation ("com.microsoft.onnxruntime:onnxruntime-android:1.18.0")
+
+    // Thêm Guava để hỗ trợ ListenableFuture
+    implementation ("com.google.guava:guava:33.0.0-android")
 
 
 }

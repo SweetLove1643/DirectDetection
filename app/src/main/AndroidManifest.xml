@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DirectDetection"
         tools:targetApi="31">
+        <activity
+            android:name=".Controller.RecognitionActivity"
+            android:exported="false" />
         <activity
             android:name=".Controller.SupportActivity"
             android:exported="false" />

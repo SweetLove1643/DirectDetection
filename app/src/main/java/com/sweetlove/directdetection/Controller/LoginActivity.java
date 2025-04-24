@@ -61,12 +61,12 @@ public class LoginActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-//        // Check if user is signed in (non-null) and update UI accordingly.
-//        FirebaseUser currentUser = mauth.getCurrentUser();
-//        if(currentUser != null){
-//            Intent home_form = new Intent(getApplicationContext(), HomeActivity.class);
-//            startActivity(home_form);
-//        }
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mauth.getCurrentUser();
+        if(currentUser != null){
+            Intent recognition = new Intent(getApplicationContext(), RecognitionActivity.class);
+            startActivity(recognition);
+        }
     }
 
     @Override
@@ -280,11 +280,10 @@ public class LoginActivity extends AppCompatActivity {
                                                 String role = document.getString("role");
                                                 if (role.equals("Người dùng")) {
                                                     Log.d(TAG, "Có dữ liệu người dùng2");
-                                                    startActivity(new Intent(LoginActivity.this, SettingsActivity.class));
+                                                    startActivity(new Intent(LoginActivity.this, RecognitionActivity.class));
                                                 } else if (role.equals("Người thân")) {
-                                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                                    startActivity(new Intent(LoginActivity.this, RecognitionActivity.class));
                                                 }
-                                                finish();
                                             } else {
                                                 Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
                                             }

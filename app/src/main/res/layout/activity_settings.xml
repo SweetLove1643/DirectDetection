@@ -85,7 +85,7 @@
                             android:contentDescription="Selected"
                             app:tint="@android:color/holo_green_light"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"/>
+                            app:layout_constraintEnd_toEndOf="parent"/>
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -121,7 +121,7 @@
                         android:contentDescription="Selected"
                         app:tint="@android:color/holo_green_light"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"/>
+                        app:layout_constraintEnd_toEndOf="parent"/>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </RelativeLayout>
             </LinearLayout>
