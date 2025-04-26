@@ -1,6 +1,7 @@
 package com.sweetlove.directdetection;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -8,8 +9,8 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.sweetlove.directdetection.Controller.LoginController;
-import com.sweetlove.directdetection.Controller.RegisterController;
+import com.sweetlove.directdetection.Controller.LoginActivity;
+import com.sweetlove.directdetection.Controller.RegisterActivity;
 
 public class MainActivity extends AppCompatActivity {
     private Button signin_btn;
@@ -25,14 +26,12 @@ public class MainActivity extends AppCompatActivity {
         create_account = findViewById(R.id.create_account);
 
         signin_btn.setOnClickListener(v -> {
-            Intent login_form = new Intent(MainActivity.this, LoginController.class);
+            Intent login_form = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(login_form);
-            finish();
         });
         create_account.setOnClickListener(v -> {
-            Intent register_form = new Intent(MainActivity.this, RegisterController.class);
+            Intent register_form = new Intent(MainActivity.this, RegisterActivity.class);
             startActivity(register_form);
-            finish();
         });
 
     }

@@ -3,19 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="#212121">
+    android:background="#212121"
+    tools:context=".Controller.SettingsActivity"
+    android:layout_marginTop="10dp">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_settings"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#424242"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:title="Cài đặt"
-        app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_arrow_back" />
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_settings"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#424242"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:title="Cài đặt"
+            app:titleTextColor="@android:color/white"
+            app:navigationIcon="@drawable/ic_arrow_back" />
+    </LinearLayout>
 
     <!-- Nội dung -->
     <ScrollView
@@ -43,7 +50,7 @@
                 android:orientation="vertical"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
-                android:gap="8dp">
+                >
 
                 <!-- Tiếng Việt -->
                 <RelativeLayout
@@ -56,21 +63,32 @@
                     android:layout_marginHorizontal="8dp"
                     android:backgroundTint="#FFFFFF"
                     android:elevation="2dp">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/vn_language">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🇻🇳 Tiếng Việt"
+                            android:textSize="16sp"
+                            android:textColor="#000000"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🇻🇳 Tiếng Việt"
-                        android:textSize="16sp"
-                        android:textColor="#000000" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_alignParentEnd="true"
+                            android:visibility="visible"
+                            android:src="@drawable/ic_check"
+                            android:contentDescription="Selected"
+                            app:tint="@android:color/holo_green_light"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_alignParentEnd="true"
-                        android:src="@drawable/ic_check"
-                        android:contentDescription="Selected"
-                        app:tint="@android:color/holo_green_light" />
+
                 </RelativeLayout>
 
                 <!-- English -->
@@ -81,13 +99,30 @@
                     android:padding="12dp"
                     android:layout_marginHorizontal="8dp"
                     android:elevation="2dp">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/en_language">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🇬🇧 English"
                         android:textSize="16sp"
-                        android:textColor="#000000" />
+                        android:textColor="#000000"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_alignParentEnd="true"
+                        android:visibility="gone"
+                        android:src="@drawable/ic_check"
+                        android:contentDescription="Selected"
+                        app:tint="@android:color/holo_green_light"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </RelativeLayout>
             </LinearLayout>
 
@@ -116,14 +151,22 @@
                     app:tint="@android:color/white" />
 
                 <SeekBar
-                    android:id="@+id/seekBar_volume"
+                    android:id="@+id/volume_value"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:progress="50"
                     android:thumbTint="#FFFFFF"
-                    android:progressTint="#FFFFFF" />
+                    android:progressTint="#FFFFFF"
+                    android:max="100"/>
             </LinearLayout>
+            <TextView
+                android:id="@+id/volumeText"
+                android:textColor="@color/white"
+                android:layout_marginStart="45dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Âm lượng: 0" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

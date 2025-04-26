@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/register_activity"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".Controller.RegisterActivity"
+        android:gravity="center"
+        android:padding="10pt"
+        android:background="@drawable/signin_background">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            >
+            <ImageButton
+                android:id="@+id/back_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="35dp"
+                android:layout_gravity="left"
+                android:background="@drawable/circle_background"
+                android:src="@drawable/baseline_arrow_back_ios_24"
+                android:contentDescription="Back"
+                android:scaleType="centerInside"
+                android:adjustViewBounds="true"
+                android:alpha="0.5"
+                />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginTop="18dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Đăng kí"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:textSize="47dp"
+                    android:gravity="center"
+                    />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Hãy tạo tài khoản mới"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/montserrat_regular"
+                    android:textSize="23dp"
+                    android:gravity="center"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:background="@drawable/rounded_corner"
+                    android:hint="Họ và tên"
+                    android:inputType="text"
+                    android:textColor="@color/white"
+                    android:padding="18dp"
+                    android:textColorHint="@color/white"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/email_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_corner"
+                    android:hint="Email"
+                    android:textColor="@color/white"
+                    android:inputType="text"
+                    android:padding="18dp"
+                    android:textColorHint="@color/white"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/password_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_corner"
+                    android:hint="Mật khẩu"
+                    android:inputType="text"
+                    android:textColor="@color/white"
+                    android:padding="18dp"
+                    android:textColorHint="@color/white"
+                    android:textSize="20sp" />
+                <Spinner
+                    android:id="@+id/spinner_usertype"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_corner"
+                    android:padding="18dp"
+                    android:textColor="#FFFFFF"
+                    />
+                <EditText
+                    android:id="@+id/family_email_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_corner"
+                    android:visibility="gone"
+                    android:hint="Email của người thân"
+                    android:inputType="text"
+                    android:textColor="@color/white"
+                    android:padding="18dp"
+                    android:textColorHint="@color/white"
+                    android:textSize="20sp"/>
+
+            </LinearLayout>
+
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Đăng kí"
+                android:backgroundTint="@color/white"
+                android:textColor="#3B84F1"
+                android:padding="18dp"
+                android:layout_marginTop="25pt"
+                android:textSize="20dp"
+                android:id="@+id/signup_btn"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginTop="32pt">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="Bạn đã có tài khoản ?"
+                    android:textColor="@color/white"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="#3B84F1"
+                    android:text="@string/signin"
+                    android:id="@+id/signin_btn"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="10dp"/>
+
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>

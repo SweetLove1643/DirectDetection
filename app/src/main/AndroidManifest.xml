@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,13 +21,19 @@
         android:theme="@style/Theme.DirectDetection"
         tools:targetApi="31">
         <activity
-            android:name=".Controller.HomeController"
+            android:name=".Controller.RecognitionActivity"
             android:exported="false" />
         <activity
-            android:name=".Controller.ForgotPassword"
-            android:exported="true" />
+            android:name=".Controller.SupportActivity"
+            android:exported="false" />
         <activity
-            android:name=".Controller.RegisterController"
+            android:name=".Controller.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Controller.HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Controller.RegisterActivity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
@@ -31,7 +45,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Controller.LoginController"
+            android:name=".Controller.LoginActivity"
             android:exported="true" />
     </application>
 
