@@ -35,12 +35,15 @@
         <activity
             android:name=".Controller.SupportActivity"
             android:exported="false" />
+
         <activity
             android:name=".Controller.SettingsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Controller.HomeActivity"
-            android:exported="false" />
+            android:exported="true">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
         <activity
             android:name=".Controller.RegisterActivity"
             android:exported="true" />

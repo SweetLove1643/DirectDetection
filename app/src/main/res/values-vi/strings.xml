@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app name -->
+    <string name="app_name">Direct Detection</string>
+
+    <!-- Login screen -->
+    <string name="title_activity_login">Đăng nhập</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Mật khẩu</string>
+    <string name="action_sign_in">Đăng nhập hoặc đăng ký</string>
+    <string name="action_sign_in_short">Đăng nhập</string>
+    <string name="welcome">Chào mừng!</string>
+    <string name="invalid_username">Tên đăng nhập không hợp lệ</string>
+    <string name="invalid_password">Mật khẩu phải >5 ký tự</string>
+    <string name="login_failed">Đăng nhập thất bại</string>
+    <string name="signup"><u>Đăng kí</u></string>
+    <string name="signin"><u>Đăng nhập</u></string>
+
+    <!-- Settings screen -->
+    <string name="settings">Cài đặt</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="theme">Giao diện</string>
+    <string name="volume">Âm lượng</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="english">Tiếng Anh</string>
+    <string name="notifications">Thông báo</string>
+    <string name="check_update">Kiểm tra cập nhật</string>
+    <string name="check">Kiểm tra</string>
+    <string name="permissions">Quyền truy cập</string>
+    <string name="manage">Quản lý</string>
+    <string name="reset_settings">Đặt lại cài đặt</string>
+    <string name="reset_settings_confirm">Bạn có chắc muốn đặt lại toàn bộ cài đặt về mặc định không?</string>
+    <string name="reset">Đặt lại</string>
+    <string name="cancel">Huỷ</string>
+    <string name="ok">OK</string>
+    <string name="latest_version">Bạn đang sử dụng phiên bản mới nhất.</string>
+    <string name="logout">Đăng xuất</string>
+</resources>
