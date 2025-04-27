@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/notificationFragment">
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.sweetlove.directdetection.Controller.NotificationFragment"
+        android:label="Thông báo" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.sweetlove.directdetection.Controller.SettingsFragment"
+        android:label="Cài đặt" />
+
+</navigation>

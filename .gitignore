@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+
+# Firebase configuration file
+app/google-services.json
+Server_Detection/.venv/
