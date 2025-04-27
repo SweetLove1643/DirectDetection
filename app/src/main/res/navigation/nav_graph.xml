@@ -2,24 +2,15 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/nav_home">
+    app:startDestination="@id/notificationFragment">
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="com.sweetlove.directdetection.Controller.HomeFragment"
-        android:label="Thông báo">
-        <action
-            android:id="@+id/action_home_to_detail"
-            app:destination="@id/nav_detail" />
-    </fragment>
+        android:id="@+id/notificationFragment"
+        android:name="com.sweetlove.directdetection.Controller.NotificationFragment"
+        android:label="Thông báo" />
 
     <fragment
-        android:id="@+id/nav_detail"
-        android:name="com.sweetlove.directdetection.Controller.DetailFragment"
-        android:label="Chi tiết thông báo" />
-
-    <fragment
-        android:id="@+id/nav_settings"
+        android:id="@+id/settingsFragment"
         android:name="com.sweetlove.directdetection.Controller.SettingsFragment"
         android:label="Cài đặt" />
 

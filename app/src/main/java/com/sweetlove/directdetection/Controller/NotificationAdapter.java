@@ -12,47 +12,42 @@ import com.sweetlove.directdetection.R;
 
 import java.util.List;
 
-public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
+public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
-    private List<Notification> notifications;
-    private OnNotificationClickListener listener;
+    private List<Notification> notificationList;
 
-    public interface OnNotificationClickListener {
-        void onNotificationClick(Notification notification);
-    }
-
-    public NotificationAdapter(List<Notification> notifications, OnNotificationClickListener listener) {
-        this.notifications = notifications;
-        this.listener = listener;
+    public NotificationAdapter(List<Notification> notificationList) {
+        this.notificationList = notificationList;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_notification, parent, false);
-        return new ViewHolder(view);
+        return new NotificationViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Notification notification = notifications.get(position);
-        holder.content.setText(notification.getContent());
-        holder.time.setText("Thời gian: " + notification.getTime());
-        holder.itemView.setOnClickListener(v -> listener.onNotificationClick(notification));
+    public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
+        Notification notification = notificationList.get(position);
+        holder.titleTextView.setText(notification.getTitle());
+        holder.messageTextView.setText(notification.getMessage());
+        holder.dateTextView.setText(notification.getDate());
     }
 
     @Override
     public int getItemCount() {
-        return notifications.size();
+        return notificationList.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView content, time;
+    static class NotificationViewHolder extends RecyclerView.ViewHolder {
+        TextView titleTextView, messageTextView, dateTextView;
 
-        ViewHolder(View itemView) {
+        NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
-            content = itemView.findViewById(R.id.notification_content);
-            time = itemView.findViewById(R.id.notification_time);
+            titleTextView = itemView.findViewById(R.id.titleTextView);
+            messageTextView = itemView.findViewById(R.id.messageTextView);
+            dateTextView = itemView.findViewById(R.id.dateTextView);
         }
     }
 }

@@ -88,5 +88,15 @@ dependencies {
     implementation ("com.google.guava:guava:31.0.1-android")
     implementation ("org.java-websocket:Java-WebSocket:1.5.4")
 
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.1.2")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("com.google.firebase:firebase-firestore:24.10.3")
+
+
+    implementation ("androidx.navigation:navigation-fragment:2.7.7")
+    implementation ("androidx.navigation:navigation-ui:2.7.7")
+    implementation ("com.google.android.material:material:1.11.0")
+    implementation ("androidx.recyclerview:recyclerview:1.3.2")
+
 
 }
