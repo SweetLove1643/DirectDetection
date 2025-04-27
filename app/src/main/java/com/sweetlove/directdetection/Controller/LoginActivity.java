@@ -98,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                                 saveUserToFirestore(user);
                                                 Toast.makeText(LoginActivity.this,"Đăng nhập thành công với Google", Toast.LENGTH_SHORT).show();
-                                                Intent home_form = new Intent(LoginActivity.this, HomeActivity.class);
+                                                Intent home_form = new Intent(LoginActivity.this, RecognitionActivity.class);
                                                 startActivity(home_form);
 
                                             }else{
@@ -282,7 +282,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     Log.d(TAG, "Có dữ liệu người dùng2");
                                                     startActivity(new Intent(LoginActivity.this, RecognitionActivity.class));
                                                 } else if (role.equals("Người thân")) {
-                                                    startActivity(new Intent(LoginActivity.this, RecognitionActivity.class));
+                                                    startActivity(new Intent(LoginActivity.this, RelativeMainActivity.class));
                                                 }
                                             } else {
                                                 Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();

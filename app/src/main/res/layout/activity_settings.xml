@@ -167,6 +167,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Âm lượng: 0" />
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:shadowColor="@color/white"
+                android:id="@+id/logout_btn"
+                android:textSize="20dp"
+                android:text="Đăng xuất"
+                android:background="@drawable/rounded_corner"
+                />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

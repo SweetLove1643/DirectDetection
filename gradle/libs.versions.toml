@@ -24,6 +24,8 @@ googleGmsGoogleServices = "4.4.2"
 cameraView = "1.4.2"
 pytorch_android = "1.13.0"
 firebaseCrashlyticsBuildtools = "3.0.3"
+navigationFragment = "2.8.9"
+navigationUi = "2.8.9"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraViewVersion" }
@@ -53,6 +55,8 @@ camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "
 pytorch_android = { module = "org.pytorch:pytorch_android", version.ref = "pytorch_android" }
 pytorch_android_torchvision = { module = "org.pytorch:pytorch_android_torchvision", version.ref = "pytorch_android" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
+androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

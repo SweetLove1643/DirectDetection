@@ -64,6 +64,8 @@ dependencies {
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation(libs.camera.view)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
 
 
     testImplementation(libs.junit)

@@ -2,6 +2,7 @@ package com.sweetlove.directdetection.Controller;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -29,6 +30,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.sweetlove.directdetection.R;
 
 import org.java_websocket.client.WebSocketClient;
@@ -65,6 +69,26 @@ public class RecognitionActivity extends AppCompatActivity {
     private long lastSpeakTime = 0;
     private String IP_ADDRESS = "192.168.1.57";
     private final Map<String, String> classTranslations = new HashMap<>();
+    private FirebaseAuth mauth;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        try{
+            SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String email_saved = preferences.getString("email", null);
+            String password_saved = preferences.getString("password", null);
+            if (email_saved == null && password_saved != null) {
+                Log.w(TAG, "Logout Recognition");
+                finish();
+            }
+
+        } catch (Exception e) {
+            finish();
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,16 +96,35 @@ public class RecognitionActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_recognition);
 
+
+
         help_btn = findViewById(R.id.helpButton);
         action_btn = findViewById(R.id.actionBtn);
         setting_btn = findViewById(R.id.settingsButton);
         camera_view = findViewById(R.id.imageScan);
 
         help_btn.setOnClickListener(v -> startActivity(new Intent(this, SupportActivity.class)));
-        setting_btn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+        setting_btn.setOnClickListener(v -> {
+            finish();
+            startActivity(new Intent(this, SettingsActivity.class));
+        });
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         reconnectHandler = new Handler(Looper.getMainLooper());
+
+        try{
+            SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String email_saved = preferences.getString("email", null);
+            String password_saved = preferences.getString("password", null);
+            if (email_saved == null && password_saved != null) {
+                Log.w(TAG, "Logout Recognition");
+                finish();
+            }
+
+        } catch (Exception e) {
+            finish();
+            throw new RuntimeException(e);
+        }
 
         // Khởi tạo bản dịch 80 nhãn COCO
         initializeClassTranslations();

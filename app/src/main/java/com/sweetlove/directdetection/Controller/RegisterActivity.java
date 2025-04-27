@@ -45,7 +45,7 @@ public class RegisterActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mauth.getCurrentUser();
         if(currentUser != null){
-            Intent home_form = new Intent(getApplicationContext(), HomeActivity.class);
+            Intent home_form = new Intent(getApplicationContext(), RecognitionActivity.class);
             startActivity(home_form);
         }
     }
