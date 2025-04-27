@@ -1,6 +1,7 @@
 package com.sweetlove.directdetection.Controller;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.sweetlove.directdetection.Controller.Notification;
-import com.sweetlove.directdetection.Controller.NotificationAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.sweetlove.directdetection.R;
 
 import java.util.ArrayList;
@@ -23,6 +26,8 @@ public class NotificationFragment extends Fragment {
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
     private List<Notification> notificationList;
+    FirebaseAuth mauth;
+    FirebaseFirestore db;
 
     @Nullable
     @Override
@@ -31,11 +36,27 @@ public class NotificationFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.notificationRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mauth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        FirebaseUser user = mauth.getCurrentUser();
 
-        // Dữ liệu mẫu
-        notificationList = new ArrayList<>();
-        notificationList.add(new Notification("Cảnh báo nguy hiểm", "Phát hiện chuyển động bất thường lúc 22:00", "2025-04-27"));
-        notificationList.add(new Notification("Cảnh báo an toàn", "Cửa chính mở lúc 21:30", "2025-04-27"));
+        notificationList = new ArrayList<>(); // list chua thong bao
+
+        db.collection("notification")
+                .whereEqualTo("uid_user", user.getUid().toString())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for(DocumentSnapshot doc : queryDocumentSnapshots){
+                        String title = doc.get("title").toString();
+                        String mess = doc.get("message").toString();
+                        String data = doc.get("data").toString();
+                        notificationList.add(new Notification(title, mess, data));
+
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(this.getClass().getSimpleName().toString(), "Error getting documents: ", e);
+                });
 
         adapter = new NotificationAdapter(notificationList);
         recyclerView.setAdapter(adapter);

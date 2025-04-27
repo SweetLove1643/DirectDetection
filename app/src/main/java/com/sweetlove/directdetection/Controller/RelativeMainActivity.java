@@ -1,8 +1,12 @@
 package com.sweetlove.directdetection.Controller;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,21 +14,38 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.sweetlove.directdetection.R;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class RelativeMainActivity extends AppCompatActivity {
 
     private static final int SMS_PERMISSION_CODE = 101;
     private final String TAG = this.getClass().getSimpleName().toString();
+    private WebSocketClient webSocketClient;
+    private String IP_ADDRESS = "192.168.0.104";
+    private FirebaseAuth mauth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mauth = FirebaseAuth.getInstance();
+
         Log.d(TAG, "onCreate: Bắt đầu khởi tạo RelativeMainActivity");
         super.onCreate(savedInstanceState);
         try {
@@ -89,6 +110,79 @@ public class RelativeMainActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi khởi tạo: " + e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
         }
+
+        NotificationChannel Tech = new NotificationChannel("warning", "Warning", NotificationManager.IMPORTANCE_DEFAULT);
+
+        Tech.setDescription("Nhận tin tức về người thân");
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(Tech);
+
+
+        try {
+            URI uri = new URI("ws://" + IP_ADDRESS + ":8080/api/detection");
+            webSocketClient = new WebSocketClient(uri) {
+                @Override
+                public void onOpen(ServerHandshake handshakedata) {
+                    try {
+                        FirebaseUser user = mauth.getCurrentUser();
+                        JSONObject mess = new JSONObject();
+                        mess.put("UID", user.getUid().toString());
+                        this.send(mess.toString());
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void onMessage(String message) {
+                    new Handler(Looper.getMainLooper()).post(() ->{
+                        try {
+                            Log.i(this.getClass().getSimpleName(), "message: " + message);
+                            if(message.trim().startsWith("{") && message.trim().endsWith("}")){
+                                JSONObject msg_json = new JSONObject(message);
+                                String title = msg_json.getString("title");
+                                String mess = msg_json.getString("message");
+                                String data = msg_json.getString("date");
+
+                                NotificationCompat.Builder builder = new  NotificationCompat.Builder(RelativeMainActivity.this, mess);
+                                builder.setSmallIcon(R.color.white);
+                                builder.setContentTitle("Tin tức từ: " + title);
+                                builder.setContentText(mess + " " + data);
+
+                                NotificationManagerCompat notiMan = NotificationManagerCompat.from(RelativeMainActivity.this);
+
+                                ActivityCompat.requestPermissions(RelativeMainActivity.this,
+                                        new String[] {Manifest.permission.POST_NOTIFICATIONS}, 0);
+                                if(ActivityCompat.checkSelfPermission(RelativeMainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS) == 0){
+                                    NotificationChannel activeChannel = notiMan.getNotificationChannel("warning");
+                                    if(activeChannel != null && activeChannel.getImportance() != NotificationManager.IMPORTANCE_NONE){
+                                        notiMan.notify(1, builder.build());
+                                    }
+                                }
+                            }
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    Log.i(TAG, "WebSocket closed: " + reason + ", code: " + code);
+                    runOnUiThread(() -> Toast.makeText(RelativeMainActivity.this, "WebSocket closed: " + reason, Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    Log.e(TAG, "WebSocket error: " + ex.getMessage());
+                    runOnUiThread(() -> Toast.makeText(RelativeMainActivity.this, "WebSocket error: " + ex.getMessage(), Toast.LENGTH_LONG).show());
+                }
+            };
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void requestSmsPermission() {
@@ -117,4 +211,5 @@ public class RelativeMainActivity extends AppCompatActivity {
             Log.w(TAG, "onRequestPermissionsResult: Mã yêu cầu không khớp, requestCode=" + requestCode);
         }
     }
+
 }
