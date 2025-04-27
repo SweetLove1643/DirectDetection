@@ -86,5 +86,9 @@ dependencies {
     implementation ("com.google.guava:guava:31.0.1-android")
     implementation ("org.java-websocket:Java-WebSocket:1.5.4")
 
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.1.2")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("com.google.firebase:firebase-firestore:24.10.3")
+
 
 }

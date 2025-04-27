@@ -57,17 +57,17 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private ActivityResultLauncher<Intent> activityResultLauncher;
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mauth.getCurrentUser();
-        if(currentUser != null){
-            Intent recognition = new Intent(getApplicationContext(), RecognitionActivity.class);
-            startActivity(recognition);
-        }
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//        // Check if user is signed in (non-null) and update UI accordingly.
+//        FirebaseUser currentUser = mauth.getCurrentUser();
+//        if(currentUser != null){
+//            Intent recognition = new Intent(getApplicationContext(), RecognitionActivity.class);
+//            startActivity(recognition);
+//        }
+//    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -119,6 +119,8 @@ public class LoginActivity extends AppCompatActivity {
 
         mauth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+
+        mauth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
 
         email_input = findViewById(R.id.email_input);
         password_input = findViewById(R.id.password_input);
