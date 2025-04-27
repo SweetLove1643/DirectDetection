@@ -39,7 +39,6 @@ buildscript {
         classpath("com.google.gms:google-services:4.4.2")
     }
 }
-
 dependencies {
 
     implementation(libs.appcompat)
@@ -64,6 +63,7 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation(libs.camera.view)
+    implementation(libs.firebase.crashlytics.buildtools)
 
 
     testImplementation(libs.junit)
@@ -72,19 +72,17 @@ dependencies {
     implementation(libs.play.services.auth)
 
     // CameraX core
-    implementation("androidx.camera:camera-core:1.3.4")
+    implementation(libs.androidx.camera.core)
     // CameraX Camera2 implementation
-    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation(libs.androidx.camera.camera2)
     // CameraX lifecycle
-    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation(libs.androidx.camera.lifecycle)
     // CameraX view (cho PreviewView)
-    implementation("androidx.camera:camera-view:1.3.4")
+    implementation(libs.camera.view.v134)
 
-    // ONNX Runtime (đã có từ trước)
-    implementation ("com.microsoft.onnxruntime:onnxruntime-android:1.18.0")
-
-    // Thêm Guava để hỗ trợ ListenableFuture
-    implementation ("com.google.guava:guava:33.0.0-android")
+    implementation("io.socket:socket.io-client:2.1.0")
+    implementation ("com.google.guava:guava:31.0.1-android")
+    implementation ("org.java-websocket:Java-WebSocket:1.5.4")
 
 
 }

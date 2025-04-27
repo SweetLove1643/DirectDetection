@@ -6,6 +6,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -27,18 +31,19 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.sweetlove.directdetection.R;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
-import ai.onnxruntime.OrtSession;
 
 public class RecognitionActivity extends AppCompatActivity {
 
@@ -47,26 +52,19 @@ public class RecognitionActivity extends AppCompatActivity {
     private ExecutorService cameraExecutor;
     private static final int CAMERA_PERMISSION_CODE = 100;
     private static final String TAG = RecognitionActivity.class.getSimpleName();
-
-    private OrtEnvironment ortEnvironment;
-    private OrtSession ortSession;
-    private String inputName;
-    private final int INPUT_WIDTH = 128;
-    private final int INPUT_HEIGHT = 128;
-    String[] class_names = {
-            "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
-            "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter",
-            "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear",
-            "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase",
-            "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
-            "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle",
-            "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-            "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut",
-            "cake", "chair", "couch", "potted plant", "bed", "dining table", "toilet",
-            "tv", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave",
-            "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-            "scissors", "teddy bear", "hair drier", "toothbrush"
-    };
+    private WebSocketClient webSocketClient;
+    private String clientId;
+    private long lastFrameTime = 0;
+    private static final long FRAME_INTERVAL_MS = 2000; // Gửi frame mỗi 2000ms
+    private static final long RECONNECT_INTERVAL_MS = 5000; // Thử kết nối lại sau 5s
+    private static final long SPEAK_INTERVAL_MS = 3000; // Chỉ phát âm mỗi 3s
+    private Handler reconnectHandler;
+    private Runnable reconnectRunnable;
+    private TextToSpeech textToSpeech;
+    private String lastSpokenClass = "";
+    private long lastSpeakTime = 0;
+    private String IP_ADDRESS = "192.168.1.57";
+    private final Map<String, String> classTranslations = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,50 +81,208 @@ public class RecognitionActivity extends AppCompatActivity {
         setting_btn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
 
         cameraExecutor = Executors.newSingleThreadExecutor();
+        reconnectHandler = new Handler(Looper.getMainLooper());
 
-        try {
-            ortEnvironment = OrtEnvironment.getEnvironment();
-            byte[] modelData = readModelFromAssets("yolo11_128.onnx");
-            ortSession = ortEnvironment.createSession(modelData, new OrtSession.SessionOptions());
+        // Khởi tạo bản dịch 80 nhãn COCO
+        initializeClassTranslations();
 
-            Set<String> inputNames = ortSession.getInputNames();
-            if (inputNames.isEmpty()) {
-                throw new IllegalStateException("Model has no input names");
+        // Khởi tạo TextToSpeech với ngôn ngữ tiếng Việt
+        textToSpeech = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(new Locale("vi", "VN"));
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e(TAG, "TextToSpeech: Tiếng Việt không được hỗ trợ");
+                    Toast.makeText(this, "Tiếng Việt không được hỗ trợ trên thiết bị này", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.i(TAG, "TextToSpeech initialized successfully with Vietnamese");
+                }
+            } else {
+                Log.e(TAG, "TextToSpeech initialization failed");
+                Toast.makeText(this, "Không thể khởi tạo Text-to-Speech", Toast.LENGTH_SHORT).show();
             }
-            inputName = inputNames.iterator().next();
-            Log.i(TAG, "Model loaded successfully. Input name: " + inputName);
-        } catch (Exception e) {
-            Log.e(TAG, "Error loading ONNX model", e);
-            Toast.makeText(this, "Failed to load model: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            ortSession = null;
-        }
+        });
+
+        // Khởi tạo runnable để thử kết nối lại
+        reconnectRunnable = () -> connectWebSocket();
+
+        // Kết nối tới server WebSocket
+        connectWebSocket();
 
         requestCameraPermission();
     }
 
-    private byte[] readModelFromAssets(String modelPath) throws Exception {
+    private void initializeClassTranslations() {
+        classTranslations.put("person", "người");
+        classTranslations.put("bicycle", "xe đạp");
+        classTranslations.put("car", "xe hơi");
+        classTranslations.put("motorcycle", "xe máy");
+        classTranslations.put("airplane", "máy bay");
+        classTranslations.put("bus", "xe buýt");
+        classTranslations.put("train", "tàu hỏa");
+        classTranslations.put("truck", "xe tải");
+        classTranslations.put("boat", "thuyền");
+        classTranslations.put("traffic light", "đèn giao thông");
+        classTranslations.put("fire hydrant", "vòi cứu hỏa");
+        classTranslations.put("stop sign", "biển dừng");
+        classTranslations.put("parking meter", "đồng hồ đỗ xe");
+        classTranslations.put("bench", "ghế dài");
+        classTranslations.put("bird", "chim");
+        classTranslations.put("cat", "mèo");
+        classTranslations.put("dog", "chó");
+        classTranslations.put("horse", "ngựa");
+        classTranslations.put("sheep", "cừu");
+        classTranslations.put("cow", "bò");
+        classTranslations.put("elephant", "voi");
+        classTranslations.put("bear", "gấu");
+        classTranslations.put("zebra", "ngựa vằn");
+        classTranslations.put("giraffe", "hươu cao cổ");
+        classTranslations.put("backpack", "ba lô");
+        classTranslations.put("umbrella", "ô");
+        classTranslations.put("handbag", "túi xách");
+        classTranslations.put("tie", "cà vạt");
+        classTranslations.put("suitcase", "vali");
+        classTranslations.put("frisbee", "đĩa bay");
+        classTranslations.put("skis", "ván trượt tuyết");
+        classTranslations.put("snowboard", "ván trượt tuyết đơn");
+        classTranslations.put("sports ball", "bóng thể thao");
+        classTranslations.put("kite", "diều");
+        classTranslations.put("baseball bat", "gậy bóng chày");
+        classTranslations.put("baseball glove", "găng tay bóng chày");
+        classTranslations.put("skateboard", "ván trượt");
+        classTranslations.put("surfboard", "ván lướt sóng");
+        classTranslations.put("tennis racket", "vợt tennis");
+        classTranslations.put("bottle", "chai");
+        classTranslations.put("wine glass", "ly rượu");
+        classTranslations.put("cup", "cốc");
+        classTranslations.put("fork", "nĩa");
+        classTranslations.put("knife", "dao");
+        classTranslations.put("spoon", "thìa");
+        classTranslations.put("bowl", "bát");
+        classTranslations.put("banana", "chuối");
+        classTranslations.put("apple", "táo");
+        classTranslations.put("sandwich", "bánh sandwich");
+        classTranslations.put("orange", "cam");
+        classTranslations.put("broccoli", "bông cải xanh");
+        classTranslations.put("carrot", "cà rốt");
+        classTranslations.put("hot dog", "xúc xích kẹp bánh");
+        classTranslations.put("pizza", "pizza");
+        classTranslations.put("donut", "bánh rán vòng");
+        classTranslations.put("cake", "bánh ngọt");
+        classTranslations.put("chair", "ghế");
+        classTranslations.put("couch", "ghế sofa");
+        classTranslations.put("potted plant", "cây trồng chậu");
+        classTranslations.put("bed", "giường");
+        classTranslations.put("dining table", "bàn ăn");
+        classTranslations.put("toilet", "bồn cầu");
+        classTranslations.put("tv", "tivi");
+        classTranslations.put("laptop", "máy tính xách tay");
+        classTranslations.put("mouse", "chuột máy tính");
+        classTranslations.put("remote", "điều khiển từ xa");
+        classTranslations.put("keyboard", "bàn phím");
+        classTranslations.put("cell phone", "điện thoại di động");
+        classTranslations.put("microwave", "lò vi sóng");
+        classTranslations.put("oven", "lò nướng");
+        classTranslations.put("toaster", "máy nướng bánh mì");
+        classTranslations.put("sink", "bồn rửa");
+        classTranslations.put("refrigerator", "tủ lạnh");
+        classTranslations.put("book", "sách");
+        classTranslations.put("clock", "đồng hồ");
+        classTranslations.put("vase", "lọ hoa");
+        classTranslations.put("scissors", "kéo");
+        classTranslations.put("teddy bear", "gấu bông");
+        classTranslations.put("hair drier", "máy sấy tóc");
+        classTranslations.put("toothbrush", "bàn chải đánh răng");
+    }
+
+    private String translateToVietnamese(String className) {
+        return classTranslations.getOrDefault(className, className);
+    }
+
+    private void connectWebSocket() {
         try {
-            InputStream inputStream = getAssets().open(modelPath);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
-            byte[] data = new byte[1024];
-            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            inputStream.close();
-            return buffer.toByteArray();
+            URI uri = new URI("ws://" + IP_ADDRESS + ":8080/api/detection");
+            webSocketClient = new WebSocketClient(uri) {
+                @Override
+                public void onOpen(ServerHandshake handshakedata) {
+                    Log.i(TAG, "WebSocket connected");
+                    runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "WebSocket connected", Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onMessage(String message) {
+                    runOnUiThread(() -> handleMessage(message));
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    Log.i(TAG, "WebSocket closed: " + reason + ", code: " + code);
+                    runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "WebSocket closed: " + reason, Toast.LENGTH_SHORT).show());
+                    scheduleReconnect();
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    Log.e(TAG, "WebSocket error: " + ex.getMessage());
+                    runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "WebSocket error: " + ex.getMessage(), Toast.LENGTH_LONG).show());
+                    scheduleReconnect();
+                }
+            };
+            webSocketClient.connect();
         } catch (Exception e) {
-            Log.e(TAG, "Error reading model file: " + modelPath, e);
-            throw new Exception("Cannot read model file: " + modelPath, e);
+            Log.e(TAG, "WebSocket connection error: " + e.getMessage());
+            runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "Failed to connect to server: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            scheduleReconnect();
         }
     }
 
-    private boolean checkPermissions() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    private void scheduleReconnect() {
+        reconnectHandler.removeCallbacks(reconnectRunnable);
+        reconnectHandler.postDelayed(reconnectRunnable, RECONNECT_INTERVAL_MS);
+    }
+
+    private void handleMessage(String message) {
+        try {
+            JSONObject data = new JSONObject(message);
+
+            if (data.has("client_id")) {
+                clientId = data.getString("client_id");
+                Log.i(TAG, "Received client_id: " + clientId);
+            } else if (data.has("detections")) {
+                JSONArray detections = data.getJSONArray("detections");
+                StringBuilder resultText = new StringBuilder();
+                for (int i = 0; i < Math.min(detections.length(), 1); i++) {
+                    JSONObject detection = detections.getJSONObject(i);
+                    String className = detection.getString("class");
+                    double confidence = detection.getDouble("confidence");
+                    String vietnameseClass = translateToVietnamese(className);
+                    resultText.append("Class: ").append(vietnameseClass)
+                            .append(", Confidence: ").append(String.format("%.2f", confidence))
+                            .append("\n");
+
+                    // Phát âm tên class bằng tiếng Việt nếu khác với class trước đó và đủ thời gian
+                    if (!className.equals(lastSpokenClass) && textToSpeech != null && System.currentTimeMillis() - lastSpeakTime > SPEAK_INTERVAL_MS) {
+                        lastSpokenClass = className;
+                        lastSpeakTime = System.currentTimeMillis();
+                        textToSpeech.speak(vietnameseClass, TextToSpeech.QUEUE_FLUSH, null, null);
+                        Log.i(TAG, "Speaking: " + vietnameseClass);
+                    }
+                }
+                if (!resultText.toString().isEmpty()) {
+                    Log.i(TAG, resultText.toString());
+                    Toast.makeText(this, resultText.toString(), Toast.LENGTH_SHORT).show();
+                }
+            } else if (data.has("error")) {
+                String error = data.getString("error");
+                Log.e(TAG, "Server error: " + error);
+                Toast.makeText(this, "Server error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing message: " + e.getMessage());
+        }
     }
 
     private void requestCameraPermission() {
-        if (!checkPermissions()) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
         } else {
             startCamera();
@@ -136,12 +292,10 @@ public class RecognitionActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startCamera();
-            } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
-            }
+        if (requestCode == CAMERA_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startCamera();
+        } else {
+            Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -150,79 +304,56 @@ public class RecognitionActivity extends AppCompatActivity {
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(camera_view.getSurfaceProvider());
 
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
-                imageAnalysis.setAnalyzer(cameraExecutor, this::processImage);
+                imageAnalysis.setAnalyzer(cameraExecutor, this::processFrame);
 
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-
                 cameraProvider.unbindAll();
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
             } catch (Exception e) {
                 Log.e(TAG, "Error starting camera", e);
-                Toast.makeText(this, "Failed to start camera", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> Toast.makeText(this, "Failed to start camera", Toast.LENGTH_SHORT).show());
             }
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private void processImage(ImageProxy image) {
-        if (ortSession == null || inputName == null) {
-            Log.e(TAG, "Cannot process image: Model not loaded");
+    private void processFrame(ImageProxy image) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFrameTime < FRAME_INTERVAL_MS) {
             image.close();
             return;
         }
+        lastFrameTime = currentTime;
 
         Bitmap bitmap = imageToBitmap(image);
-        if (bitmap == null) {
-            image.close();
-            return;
+        if (bitmap != null && webSocketClient != null && webSocketClient.isOpen()) {
+            sendFrameToServer(bitmap);
+        } else {
+            Log.w(TAG, "Skipping frame: WebSocket not open");
         }
+        image.close();
+    }
 
-        float[] inputTensor = preprocessImage(bitmap);
-        OnnxTensor onnxTensor = null;
+    private void sendFrameToServer(Bitmap bitmap) {
         try {
-            long[] shape = new long[]{1, 3, INPUT_HEIGHT, INPUT_WIDTH}; // [1, 3, 128, 128]
-            FloatBuffer floatBuffer = FloatBuffer.wrap(inputTensor);
-            onnxTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape);
+            // Chuyển Bitmap thành base64
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            byte[] imageBytes = baos.toByteArray();
+            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            Log.i(TAG, "Sending frame: " + encodedImage.length() + " bytes");
 
-            OnnxTensor finalOnnxTensor = onnxTensor;
-            OrtSession.Result result = ortSession.run(
-                    new HashMap<String, OnnxTensor>() {{
-                        put(inputName, finalOnnxTensor);
-                    }}
-            );
-
-            // Xử lý đầu ra float[][][]
-            float[][][] outputTensor = (float[][][]) result.get(0).getValue();
-            // Giả định đầu ra có dạng [1, 1, num_classes], trích xuất vector phân loại
-            float[] output = outputTensor[0][0]; // Lấy vector [num_classes]
-
-            int predictedClass = argMax(output);
-            float confidence = output[predictedClass];
-
-            runOnUiThread(() -> {
-                String resultText = "Class: " + predictedClass + ", Confidence: " + confidence;
-                String predict = class_names[predictedClass % 79];
-                Log.i(TAG, "Dối tượng: " + predict);
-                Log.i(TAG, resultText);
-                Toast.makeText(RecognitionActivity.this, predict, Toast.LENGTH_SHORT).show();
-            });
+            // Gửi frame qua WebSocket
+            JSONObject data = new JSONObject();
+            data.put("frame", encodedImage);
+            webSocketClient.send(data.toString());
         } catch (Exception e) {
-            Log.e(TAG, "Error running inference", e);
-        } finally {
-            if (onnxTensor != null) {
-                try {
-                    onnxTensor.close();
-                } catch (Exception e) {
-                    Log.e(TAG, "Error closing OnnxTensor", e);
-                }
-            }
-            image.close();
+            Log.e(TAG, "Error sending frame: " + e.getMessage());
         }
     }
 
@@ -263,36 +394,11 @@ public class RecognitionActivity extends AppCompatActivity {
             }
 
             Bitmap bitmap = Bitmap.createBitmap(rgb, width, height, Bitmap.Config.ARGB_8888);
-            return Bitmap.createScaledBitmap(bitmap, INPUT_WIDTH, INPUT_HEIGHT, true);
+            return Bitmap.createScaledBitmap(bitmap, 640, 640, true); // Resize cho YOLO
         } catch (Exception e) {
             Log.e(TAG, "Error converting ImageProxy to Bitmap", e);
             return null;
         }
-    }
-
-    private float[] preprocessImage(Bitmap bitmap) {
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_WIDTH, INPUT_HEIGHT, true);
-        float[] inputTensor = new float[1 * 3 * INPUT_WIDTH * INPUT_HEIGHT];
-        int[] pixels = new int[INPUT_WIDTH * INPUT_HEIGHT];
-        resizedBitmap.getPixels(pixels, 0, INPUT_WIDTH, 0, 0, INPUT_WIDTH, INPUT_HEIGHT);
-
-        int index = 0;
-        for (int pixel : pixels) {
-            inputTensor[index++] = ((pixel >> 16) & 0xFF) / 255.0f; // R
-            inputTensor[index++] = ((pixel >> 8) & 0xFF) / 255.0f;  // G
-            inputTensor[index++] = (pixel & 0xFF) / 255.0f;         // B
-        }
-        return inputTensor;
-    }
-
-    private int argMax(float[] array) {
-        int maxIdx = 0;
-        for (int i = 1; i < array.length; i++) {
-            if (array[i] > array[maxIdx]) {
-                maxIdx = i;
-            }
-        }
-        return maxIdx;
     }
 
     @Override
@@ -301,11 +407,13 @@ public class RecognitionActivity extends AppCompatActivity {
         if (cameraExecutor != null) {
             cameraExecutor.shutdown();
         }
-        try {
-            if (ortSession != null) ortSession.close();
-            if (ortEnvironment != null) ortEnvironment.close();
-        } catch (Exception e) {
-            Log.e(TAG, "Error closing ONNX resources", e);
+        if (webSocketClient != null) {
+            webSocketClient.close();
         }
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        reconnectHandler.removeCallbacks(reconnectRunnable);
     }
 }
