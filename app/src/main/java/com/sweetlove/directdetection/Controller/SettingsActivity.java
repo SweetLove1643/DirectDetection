@@ -1,8 +1,12 @@
 package com.sweetlove.directdetection.Controller;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -13,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.sweetlove.directdetection.R;
+
+import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -36,28 +42,23 @@ public class SettingsActivity extends AppCompatActivity {
         volume = findViewById(R.id.volume_value);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-//        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-
-//        volume.setMax(maxVolume);
         volume.setProgress(currentVolume);
         volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(fromUser){
                     audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
-                    volumeText.setText("Âm lượng: " + progress);
+                    volumeText.setText(getString(R.string.volume) + ": " + progress);
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
@@ -68,5 +69,33 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // Xử lý chuyển đổi ngôn ngữ
+        vn_language.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setLocale("vi");
+            }
+        });
+
+        en_language.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setLocale("en");
+            }
+        });
+    }
+
+    private void setLocale(String lang) {
+        Locale myLocale = new Locale(lang);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+        
+        // Khởi động lại activity để áp dụng ngôn ngữ mới
+        Intent refresh = new Intent(this, SettingsActivity.class);
+        startActivity(refresh);
+        finish();
     }
 }

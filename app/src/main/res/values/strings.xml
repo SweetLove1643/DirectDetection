@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DirectDetection</string>
+    <string name="app_name">Direct Detection</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -12,4 +13,9 @@
     <string name="signup"><u>Đăng kí</u></string>
     <string name="signin"><u>Đăng nhập</u></string>
     <string name="default_web_client_id">649299280-7jm24cofvbri0q7qu6h9am64narusf8r.apps.googleusercontent.com</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="volume">Volume</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="english">English</string>
 </resources>
