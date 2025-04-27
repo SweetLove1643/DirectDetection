@@ -67,7 +67,7 @@ public class RecognitionActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private String lastSpokenClass = "";
     private long lastSpeakTime = 0;
-    private String IP_ADDRESS = "192.168.1.57";
+    private String IP_ADDRESS = "192.168.0.104";
     private final Map<String, String> classTranslations = new HashMap<>();
     private FirebaseAuth mauth;
 

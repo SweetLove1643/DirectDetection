@@ -27,8 +27,9 @@
         android:theme="@style/Theme.DirectDetection"
         tools:targetApi="31">
         <activity
-            android:name=".Controller.RelativeActivity"
+            android:name=".Controller.RelativeMainActivity"
             android:exported="false" />
+
         <activity
             android:name=".Controller.RecognitionActivity"
             android:exported="false" />
@@ -38,9 +39,7 @@
         <activity
             android:name=".Controller.SettingsActivity"
             android:exported="false" />
-        <activity
-            android:name=".Controller.HomeActivity"
-            android:exported="false" />
+
         <activity
             android:name=".Controller.RegisterActivity"
             android:exported="true" />
