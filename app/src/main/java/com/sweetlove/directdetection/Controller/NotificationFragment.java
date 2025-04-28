@@ -76,7 +76,7 @@ public class NotificationFragment extends Fragment {
                                         try {
                                             String title = doc.getString("title");
                                             String message = doc.getString("message");
-                                            String date = doc.getString("data");
+                                            String date = doc.getString("time");
                                             if (title != null && message != null && date != null) {
                                                 notificationList.add(new Notification(title, message, date));
                                                 Log.d(TAG, "Firestore: Added notification - title=" + title + ", message=" + message + ", date=" + date);
