@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Direct Detection</string>
-    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login">Login</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
+    <string name="welcome">Welcome!</string>
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
+    <string name="login_failed">Login failed</string>
     <string name="signup"><u>Sign Up</u></string>
     <string name="signin"><u>Sign In</u></string>
     <string name="default_web_client_id">649299280-7jm24cofvbri0q7qu6h9am64narusf8r.apps.googleusercontent.com</string>
@@ -32,4 +32,18 @@
     <string name="ok">OK</string>
     <string name="latest_version">You are using the latest version.</string>
     <string name="logout">Logout</string>
+    <string name="danger">Danger notice</string>
+    <string name="detailed_instructions">1. Point the camera at the object to be identified.\n2. Listen to the audio describing the object\n3. Adjust the settings in Settings if necessary.</string>
+    <string name="instructions">Instructions</string>
+    <string name="features">Features</string>
+    <string name="detailed_features">1. Identify objects and announce object type name through sound\n2. Describe objects through camera\n3. Describe surrounding context (in development)</string>
+    <string name="support">Support</string>
+    <string name="login_with_your_account">Login with your account</string>
+    <string name="remember_me">Remember me</string>
+    <string name="forgotpassword">Forgot password?</string>
+    <string name="login">Login</string>
+    <string name="continute_with">Continue with</string>
+    <string name="let_signup">Let\'s create a new account</string>
+    <string name="fullname">Full name</string>
+    <string name="save">Save</string>
 </resources>
