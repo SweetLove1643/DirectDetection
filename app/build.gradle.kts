@@ -34,6 +34,20 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        exclude("META-INF/LICENSE.md")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/NOTICE")
+    }
+    packagingOptions {
+        resources {
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/DEPENDENCIES"
+        }
+    }
 }
 buildscript {
     dependencies {
@@ -97,6 +111,10 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui:2.7.7")
     implementation ("com.google.android.material:material:1.11.0")
     implementation ("androidx.recyclerview:recyclerview:1.3.2")
+
+    // dich vu email
+    implementation("com.sun.mail:android-mail:1.6.7")
+    implementation("com.sun.mail:android-activation:1.6.7")
 
 
 }
