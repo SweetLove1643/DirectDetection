@@ -21,8 +21,11 @@ model = YOLO("yolo11_128.pt")  # Thay bằng đường dẫn tới mô hình c�
 
 @sock.route('/api/detection')
 def detection(ws):
+    data = ws.receive(timeout=1000)
+    data_json = json.loads(data)
+    print(f"Received data: {data}")
     # Tạo client_id duy nhất
-    client_id = str(uuid.uuid4())
+    client_id = data_json["UID"]
     clients[client_id] = ws
     ws.send(json.dumps({"client_id": client_id}))
     print(f"Client {client_id} connected")
@@ -31,43 +34,62 @@ def detection(ws):
         while True:
             # Nhận dữ liệu từ client
             data = ws.receive(timeout=1000)
+            if"frame" not in json.loads(data):
+                print(json.loads(data))
             if not data:
                 continue
 
             try:
                 # Giải mã dữ liệu JSON
                 data_json = json.loads(data)
-                if "frame" not in data_json:
+                if "frame" in data_json:
+                    # Giải mã frame từ base64
+                    frame_data = base64.b64decode(data_json["frame"])
+                    frame = Image.open(BytesIO(frame_data))
+                    frame = np.array(frame)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+                    # Thực hiện suy luận
+                    results = model(frame, conf=0.5, iou=0.45)
+
+                    # Xử lý kết quả
+                    detections = []
+                    for result in results:
+                        for box in result.boxes:
+                            x, y, w, h = box.xywh[0].tolist()
+                            conf = box.conf.item()
+                            cls = int(box.cls.item())
+                            class_name = model.names[cls]
+                            detections.append({
+                                "class": class_name,
+                                "confidence": conf,
+                                "x": x,
+                                "y": y,
+                                "w": w,
+                                "h": h
+                            })
+
+                    # Gửi kết quả về client
+                    ws.send(json.dumps({"detections": detections}))
+                elif "warning" in data_json:
+                    relative_id = data_json["warning"][0]
+                    title = data_json["title"]
+                    message = data_json["message"]
+                    date = data_json["date"]
+
+                    if relative_id in clients:
+                        warning = {
+                            "title": title,
+                            "message": message,
+                            "date": date
+                        }
+                        print(f"Sending warning to client {relative_id}: {warning}")
+                        clients[relative_id].send(json.dumps(warning))
+                    else:
+                        print(f"Client {relative_id} not found for warning")
+                else:
                     continue
-
-                # Giải mã frame từ base64
-                frame_data = base64.b64decode(data_json["frame"])
-                frame = Image.open(BytesIO(frame_data))
-                frame = np.array(frame)
-                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-                # Thực hiện suy luận
-                results = model(frame, conf=0.5, iou=0.45)
-
-                # Xử lý kết quả
-                detections = []
-                for result in results:
-                    for box in result.boxes:
-                        x, y, w, h = box.xywh[0].tolist()
-                        conf = box.conf.item()
-                        cls = int(box.cls.item())
-                        class_name = model.names[cls]
-                        detections.append({
-                            "class": class_name,
-                            "confidence": conf,
-                            "x": x,
-                            "y": y,
-                            "w": w,
-                            "h": h
-                        })
-
-                # Gửi kết quả về client
-                ws.send(json.dumps({"detections": detections}))
+                    
             except Exception as e:
                 print(f"Error processing frame for client {client_id}: {e}")
                 ws.send(json.dumps({"error": str(e)}))

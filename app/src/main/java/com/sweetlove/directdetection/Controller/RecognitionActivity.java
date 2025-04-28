@@ -9,6 +9,7 @@ import android.graphics.ImageFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.service.quicksettings.Tile;
 import android.speech.tts.TextToSpeech;
 import android.util.Base64;
 import android.util.Log;
@@ -32,20 +33,28 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.sweetlove.directdetection.R;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -67,9 +76,15 @@ public class RecognitionActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private String lastSpokenClass = "";
     private long lastSpeakTime = 0;
-    private String IP_ADDRESS = "192.168.0.104";
+    private String IP_ADDRESS = "192.168.1.115";
     private final Map<String, String> classTranslations = new HashMap<>();
     private FirebaseAuth mauth;
+    private FirebaseFirestore db;
+
+    private String[] warning = {
+            "người",
+            "điện thoại di động"
+    };
 
     @Override
     protected void onStart() {
@@ -96,7 +111,8 @@ public class RecognitionActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_recognition);
 
-
+        mauth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         help_btn = findViewById(R.id.helpButton);
         action_btn = findViewById(R.id.actionBtn);
@@ -247,6 +263,16 @@ public class RecognitionActivity extends AppCompatActivity {
             webSocketClient = new WebSocketClient(uri) {
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
+                    try {
+                        FirebaseUser user = mauth.getCurrentUser();
+                        JSONObject mess = new JSONObject();
+                        mess.put("UID", user.getUid().toString());
+                        this.send(mess.toString());
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
                     Log.i(TAG, "WebSocket connected");
                     runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "WebSocket connected", Toast.LENGTH_SHORT).show());
                 }
@@ -302,6 +328,13 @@ public class RecognitionActivity extends AppCompatActivity {
                             .append(", Confidence: ").append(String.format("%.2f", confidence))
                             .append("\n");
 
+                    // Cảnh báo về người thân
+                    if(Arrays.asList(warning).contains(vietnameseClass)){
+                        notifi_to_firestore("Cảnh báo nguy hiểm", "Phát hiện nguy hiểm: " + vietnameseClass);
+                        send_relativeid_to_server();
+                    }
+
+
                     // Phát âm tên class bằng tiếng Việt nếu khác với class trước đó và đủ thời gian
                     if (!className.equals(lastSpokenClass) && textToSpeech != null && System.currentTimeMillis() - lastSpeakTime > SPEAK_INTERVAL_MS) {
                         lastSpokenClass = className;
@@ -315,6 +348,7 @@ public class RecognitionActivity extends AppCompatActivity {
                     Toast.makeText(this, resultText.toString(), Toast.LENGTH_SHORT).show();
                 }
             } else if (data.has("error")) {
+                Log.e(TAG, data.toString());
                 String error = data.getString("error");
                 Log.e(TAG, "Server error: " + error);
                 Toast.makeText(this, "Server error: " + error, Toast.LENGTH_SHORT).show();
@@ -459,4 +493,73 @@ public class RecognitionActivity extends AppCompatActivity {
         }
         reconnectHandler.removeCallbacks(reconnectRunnable);
     }
+
+    private void notifi_to_firestore(String Title, String Message){
+        try{
+            Date dateee = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            String date = sdf.format(dateee);
+
+            FirebaseUser user = mauth.getCurrentUser();
+            String UID = user.getUid().toString();
+            String new_idDoc = UUID.randomUUID().toString();
+
+            Map<String, Object> notice = new HashMap<>();
+            notice.put("uid_user", UID);
+            notice.put("title", Title);
+            notice.put("message", Message);
+            notice.put("time", date);
+
+
+            db.collection("notification")
+                    .document(new_idDoc)
+                    .set(notice)
+                    .addOnSuccessListener(documentReference -> {
+                        Log.i(TAG, "Đã lưu cảnh báo vào Firestore");
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.i(TAG, "Thất bại khi lưu cảnh báo vào Firestore");
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
+        }
+    }
+    private void send_relativeid_to_server() throws JSONException {
+        FirebaseUser user = mauth.getCurrentUser();
+
+        Date dateee = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String date = sdf.format(dateee);
+
+
+        db.collection("relationships")
+                .whereEqualTo("userId", user.getUid())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> list_relative = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String relative_id = doc.get("familyUserId").toString();
+                        list_relative.add(relative_id);
+                    }
+
+                    JSONObject json = new JSONObject();
+
+
+                    try {
+                        json.put("warning", new JSONArray(list_relative));
+                        json.put("title", "Cảnh báo nguy hiểm");
+                        json.put("message", "Phát hiện nguy hiểm");
+                        json.put("date", date);
+
+                        webSocketClient.send(json.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error fetching relationships", e);
+                });
+    }
+
 }
