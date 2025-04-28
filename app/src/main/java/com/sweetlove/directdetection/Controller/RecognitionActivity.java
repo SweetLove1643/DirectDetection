@@ -9,6 +9,7 @@ import android.graphics.ImageFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.service.quicksettings.Tile;
 import android.speech.tts.TextToSpeech;
 import android.util.Base64;
@@ -83,8 +84,8 @@ public class RecognitionActivity extends AppCompatActivity {
     private ExecutorService executorService;
 
     private String[] warning = {
-            "người",
-            "điện thoại di động"
+//            "người",
+//            "điện thoại di động"
     };
 
     @Override
@@ -153,13 +154,28 @@ public class RecognitionActivity extends AppCompatActivity {
         // Khởi tạo TextToSpeech với ngôn ngữ tiếng Việt
         textToSpeech = new TextToSpeech(this, status -> {
             if (status == TextToSpeech.SUCCESS) {
-                int result = textToSpeech.setLanguage(new Locale("vi", "VN"));
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "TextToSpeech: Tiếng Việt không được hỗ trợ");
-                    Toast.makeText(this, "Tiếng Việt không được hỗ trợ trên thiết bị này", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.i(TAG, "TextToSpeech initialized successfully with Vietnamese");
+
+                SharedPreferences preferences = getSharedPreferences("app_language", MODE_PRIVATE);
+                String language = preferences.getString("app_language", "vi");
+                if(language == "vi"){
+                    int result = textToSpeech.setLanguage(new Locale("vi", "VN"));
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e(TAG, "TextToSpeech: Tiếng Việt không được hỗ trợ");
+                        Toast.makeText(this, "Tiếng Việt không được hỗ trợ trên thiết bị này", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.i(TAG, "TextToSpeech initialized successfully with Vietnamese");
+                    }
+                }else{
+                    int result = textToSpeech.setLanguage(new Locale("en", "EN"));
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e(TAG, "TextToSpeech: English not support");
+                        Toast.makeText(this, "English not support in phone", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.i(TAG, "TextToSpeech initialized successfully with English");
+                    }
                 }
+
+
             } else {
                 Log.e(TAG, "TextToSpeech initialization failed");
                 Toast.makeText(this, "Không thể khởi tạo Text-to-Speech", Toast.LENGTH_SHORT).show();
@@ -328,7 +344,13 @@ public class RecognitionActivity extends AppCompatActivity {
                     JSONObject detection = detections.getJSONObject(i);
                     String className = detection.getString("class");
                     double confidence = detection.getDouble("confidence");
-                    String vietnameseClass = translateToVietnamese(className);
+
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    String language = preferences.getString("app_language", "vi");
+                    Log.d(TAG, "handleMessage: Current language: " + language);
+
+                    String vietnameseClass = language.equals("vi") ? translateToVietnamese(className) : className;
+
                     resultText.append("Class: ").append(vietnameseClass)
                             .append(", Confidence: ").append(String.format("%.2f", confidence))
                             .append("\n");
