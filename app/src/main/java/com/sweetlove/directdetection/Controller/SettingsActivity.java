@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.sweetlove.directdetection.R;
+import com.sweetlove.directdetection.Utils.LanguageManager;
 
 import java.util.Locale;
 
@@ -30,12 +31,16 @@ public class SettingsActivity extends AppCompatActivity {
     private AudioManager audioManager;
     private TextView volumeText;
     private Button logoutBtn;
+    private LanguageManager languageManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
+
+        // Khởi tạo LanguageManager
+        languageManager = LanguageManager.getInstance(this);
 
         // 1. View binding
         toolbar = findViewById(R.id.toolbar_settings);
@@ -51,10 +56,12 @@ public class SettingsActivity extends AppCompatActivity {
 
         // 3. Click chọn ngôn ngữ
         vn_language.setOnClickListener(v -> {
-            setLocale("vi");
+            languageManager.setLanguage(this, "vi");
+            recreate();
         });
         en_language.setOnClickListener(v -> {
-            setLocale("en");
+            languageManager.setLanguage(this, "en");
+            recreate();
         });
 
         // Hiển thị tick cho ngôn ngữ hiện tại
@@ -96,8 +103,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateLanguageSelection() {
-        String currentLang = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("app_language", "vi");
+        String currentLang = languageManager.getCurrentLanguage();
         
         // Tìm ImageView trong mỗi ConstraintLayout
         ImageView vnCheck = findViewById(R.id.icon_vn_check);
@@ -109,38 +115,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Áp dụng ngôn ngữ mới và lưu vào prefs
-     */
-    private void setLocale(String lang) {
-        // 1. Lưu vào prefs
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.edit().putString("app_language", lang).apply();
-
-        // 2. Thay đổi locale
-        Locale locale = new Locale(lang);
-        Locale.setDefault(locale);
-        Configuration config = new Configuration();
-        config.setLocale(locale);
-        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-
-        // 3. Cập nhật UI
-        updateLanguageSelection();
-        
-        // 4. Recreate để reload UI
-        recreate();
-    }
-
     @Override
     public void onBackPressed() {
-        // Nếu chưa đổi gì thì quay lại bình thường
-        String currentLang = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("app_language", "vi");
-        if (currentLang.equals("vi")) {
-            super.onBackPressed();
-        } else {
-            // Nếu đã đổi, thì finish để onDestroy() được gọi applyNewLanguage
-            finish();
-        }
+        super.onBackPressed();
     }
 }
