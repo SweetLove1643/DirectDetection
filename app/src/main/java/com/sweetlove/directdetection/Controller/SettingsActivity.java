@@ -17,6 +17,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.sweetlove.directdetection.R;
 
 import java.util.Locale;
@@ -30,12 +31,15 @@ public class SettingsActivity extends AppCompatActivity {
     private AudioManager audioManager;
     private TextView volumeText;
     private Button logoutBtn;
+    FirebaseAuth mauth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
+
+        mauth = FirebaseAuth.getInstance();
 
         // 1. View binding
         toolbar = findViewById(R.id.toolbar_settings);
@@ -85,7 +89,7 @@ public class SettingsActivity extends AppCompatActivity {
         logoutBtn.setOnClickListener(v -> {
             PreferenceManager.getDefaultSharedPreferences(this)
                     .edit().clear().apply();
-            finishAffinity();
+            logout();
         });
     }
 
@@ -142,5 +146,16 @@ public class SettingsActivity extends AppCompatActivity {
             // Nếu đã đổi, thì finish để onDestroy() được gọi applyNewLanguage
             finish();
         }
+    }
+
+    private void logout(){
+        mauth.signOut();
+
+        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+
+        finish();
     }
 }

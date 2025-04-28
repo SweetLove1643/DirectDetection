@@ -32,4 +32,17 @@
     <string name="ok">OK</string>
     <string name="latest_version">You are using the latest version.</string>
     <string name="logout">Logout</string>
+
+
+
+    <!-- Strings cho RoleSelectionActivity -->
+    <string name="select_role_title">Select Your Role</string>
+    <string name="role_user">User</string>
+    <string name="role_relative">Relative</string>
+    <string name="relative_email_hint">Relative\'s Email</string>
+    <string name="confirm">Confirm</string>
+    <string name="email_required">Please enter the relative\'s email</string>
+    <string name="invalid_email">Invalid email address</string>
+    <string name="role_saved">Role saved successfully</string>
+    <string name="error_saving_role">Error saving role: %s</string>
 </resources>

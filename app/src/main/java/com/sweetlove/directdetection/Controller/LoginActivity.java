@@ -87,11 +87,17 @@ public class LoginActivity extends AppCompatActivity {
                                             if (task.isSuccessful()) {
                                                 Log.d(TAG, "signInWithCredential:success");
                                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                                saveUserToFirestore(user);
-                                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công với Google", Toast.LENGTH_SHORT).show();
-                                                Intent home_form = new Intent(LoginActivity.this, RecognitionActivity.class);
-                                                startActivity(home_form);
-                                                finish();
+                                                if (user != null) {
+                                                    Log.d(TAG, "handleGoogleSignInResult: User signed in: " + user.getEmail());
+                                                    checkUserRole(user);
+                                                } else {
+                                                    Log.w(TAG, "handleGoogleSignInResult: Sign-in failed");
+                                                }
+//                                                saveUserToFirestore(user);
+//                                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công với Google", Toast.LENGTH_SHORT).show();
+//                                                Intent home_form = new Intent(LoginActivity.this, RecognitionActivity.class);
+//                                                startActivity(home_form);
+//                                                finish();
                                             } else {
                                                 Log.e(TAG, "signInWithCredential: Đăng nhập thất bại: ", task.getException());
                                                 Toast.makeText(LoginActivity.this, "Đăng nhập Google thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -244,6 +250,38 @@ public class LoginActivity extends AppCompatActivity {
             activityResultLauncher.launch(signInIntent);
             Log.d(TAG, "startGoogleSignIn: Đã launch intent Google Sign-In");
         });
+    }
+
+    private void checkUserRole(FirebaseUser user) {
+        Log.d(TAG, "checkUserRole: Checking role for user: " + user.getUid());
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("role")) {
+                        String role =  documentSnapshot.getString("role");
+                        Log.d(TAG, "checkUserRole: User has role: " + role);
+                        if("Người dùng".equals(role)){
+                            Log.d(TAG, "Người dùng " );
+                            // Người dùng đã có vai trò, chuyển đến màn hình chính
+                            startActivity(new Intent(this, RecognitionActivity.class));
+                        }else{
+                            Log.d(TAG, "Người thân " );
+
+                            startActivity(new Intent(this, RelativeMainActivity.class));
+                        }
+
+                    } else {
+                        Log.d(TAG, "checkUserRole: No role found, redirecting to RoleSelectionActivity");
+                        // Chưa có vai trò, chuyển đến chọn vai trò
+                        startActivity(new Intent(this, ChooseRoleActivity.class));
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "checkUserRole: Error checking role: ", e);
+                    Toast.makeText(this, "Lỗi khi kiểm tra vai trò: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 
     private void saveUserToFirestore(FirebaseUser user) {

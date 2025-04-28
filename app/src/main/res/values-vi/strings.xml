@@ -35,4 +35,19 @@
     <string name="ok">OK</string>
     <string name="latest_version">Bạn đang sử dụng phiên bản mới nhất.</string>
     <string name="logout">Đăng xuất</string>
+
+
+
+
+
+    <!-- Strings cho RoleSelectionActivity -->
+    <string name="select_role_title">Chọn vai trò của bạn</string>
+    <string name="role_user">Người dùng</string>
+    <string name="role_relative">Người thân</string>
+    <string name="relative_email_hint">Email người thân</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="email_required">Vui lòng nhập email người thân</string>
+    <string name="invalid_email">Email không hợp lệ</string>
+    <string name="role_saved">Vai trò đã được lưu</string>
+    <string name="error_saving_role">Lỗi khi lưu vai trò: %s</string>
 </resources>
