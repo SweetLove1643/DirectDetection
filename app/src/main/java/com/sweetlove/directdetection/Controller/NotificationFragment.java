@@ -23,43 +23,87 @@ import java.util.List;
 
 public class NotificationFragment extends Fragment {
 
+    private static final String TAG = "NotificationFragment";
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
     private List<Notification> notificationList;
-    FirebaseAuth mauth;
-    FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: Starting initialization of NotificationFragment");
         View view = inflater.inflate(R.layout.fragment_notification, container, false);
+        Log.d(TAG, "onCreateView: Layout fragment_notification inflated");
 
         recyclerView = view.findViewById(R.id.notificationRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mauth = FirebaseAuth.getInstance();
+        if (recyclerView != null) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            Log.d(TAG, "onCreateView: RecyclerView initialized with LinearLayoutManager");
+        } else {
+            Log.w(TAG, "onCreateView: RecyclerView (R.id.notificationRecyclerView) not found");
+        }
+
+        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        FirebaseUser user = mauth.getCurrentUser();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            Log.d(TAG, "onCreateView: Firebase user authenticated, UID=" + user.getUid());
+        } else {
+            Log.w(TAG, "onCreateView: No authenticated user found");
+        }
 
-        notificationList = new ArrayList<>(); // list chua thong bao
+        notificationList = new ArrayList<>();
+        Log.d(TAG, "onCreateView: Notification list initialized, size=" + notificationList.size());
 
-        db.collection("notification")
-                .whereEqualTo("uid_user", user.getUid().toString())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for(DocumentSnapshot doc : queryDocumentSnapshots){
-                        String title = doc.get("title").toString();
-                        String mess = doc.get("message").toString();
-                        String data = doc.get("data").toString();
-                        notificationList.add(new Notification(title, mess, data));
+        if (user != null) {
+            Log.d(TAG, "onCreateView: Querying Firestore collection 'notification' for UID=" + user.getUid());
 
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(this.getClass().getSimpleName().toString(), "Error getting documents: ", e);
-                });
+            db.collection("relationships")
+                    .whereEqualTo("familyUserId", user.getUid())
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        Log.d(TAG, "Truy cập relationships");
+                        String relative_uid = queryDocumentSnapshots.getDocuments().get(0).get("userId").toString();
+
+                        db.collection("notification")
+                                .whereEqualTo("uid_user", relative_uid)
+                                .get()
+                                .addOnSuccessListener(queryDocumentSnapshotss -> {
+                                    Log.d(TAG, "Firestore: Query successful, document count=" + queryDocumentSnapshotss.size());
+                                    for (DocumentSnapshot doc : queryDocumentSnapshotss) {
+                                        try {
+                                            String title = doc.getString("title");
+                                            String message = doc.getString("message");
+                                            String date = doc.getString("data");
+                                            if (title != null && message != null && date != null) {
+                                                notificationList.add(new Notification(title, message, date));
+                                                Log.d(TAG, "Firestore: Added notification - title=" + title + ", message=" + message + ", date=" + date);
+                                            } else {
+                                                Log.w(TAG, "Firestore: Invalid document data, skipping - title=" + title + ", message=" + message + ", date=" + date);
+                                            }
+                                        } catch (Exception e) {
+                                            Log.e(TAG, "Firestore: Error processing document " + doc.getId() + ": ", e);
+                                        }
+                                    }
+                                    Log.d(TAG, "Firestore: Notification list updated, size=" + notificationList.size());
+                                    adapter.notifyDataSetChanged();
+                                    Log.d(TAG, "Firestore: Adapter notified of data change");
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Firestore: Error querying collection 'notification': ", e);
+                                });
+
+                    });
+
+        } else {
+            Log.w(TAG, "onCreateView: Cannot query Firestore, user is null");
+        }
 
         adapter = new NotificationAdapter(notificationList);
         recyclerView.setAdapter(adapter);
+        Log.d(TAG, "onCreateView: NotificationAdapter set for RecyclerView");
 
         return view;
     }

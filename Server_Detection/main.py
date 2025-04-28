@@ -34,6 +34,8 @@ def detection(ws):
         while True:
             # Nhận dữ liệu từ client
             data = ws.receive(timeout=1000)
+            if"frame" not in json.loads(data):
+                print(json.loads(data))
             if not data:
                 continue
 
@@ -70,13 +72,19 @@ def detection(ws):
                     # Gửi kết quả về client
                     ws.send(json.dumps({"detections": detections}))
                 elif "warning" in data_json:
-                    relative_id = data_json["warning"]
+                    relative_id = data_json["warning"][0]
                     title = data_json["title"]
                     message = data_json["message"]
                     date = data_json["date"]
 
                     if relative_id in clients:
-                        clients[relative_id].send(json.dumps({"title": title, "message": message, "date": date}))
+                        warning = {
+                            "title": title,
+                            "message": message,
+                            "date": date
+                        }
+                        print(f"Sending warning to client {relative_id}: {warning}")
+                        clients[relative_id].send(json.dumps(warning))
                     else:
                         print(f"Client {relative_id} not found for warning")
                 else:

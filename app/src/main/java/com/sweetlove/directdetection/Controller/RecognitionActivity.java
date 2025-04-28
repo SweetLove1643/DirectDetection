@@ -46,6 +46,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -75,7 +76,7 @@ public class RecognitionActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private String lastSpokenClass = "";
     private long lastSpeakTime = 0;
-    private String IP_ADDRESS = "192.168.0.104";
+    private String IP_ADDRESS = "192.168.1.115";
     private final Map<String, String> classTranslations = new HashMap<>();
     private FirebaseAuth mauth;
     private FirebaseFirestore db;
@@ -347,6 +348,7 @@ public class RecognitionActivity extends AppCompatActivity {
                     Toast.makeText(this, resultText.toString(), Toast.LENGTH_SHORT).show();
                 }
             } else if (data.has("error")) {
+                Log.e(TAG, data.toString());
                 String error = data.getString("error");
                 Log.e(TAG, "Server error: " + error);
                 Toast.makeText(this, "Server error: " + error, Toast.LENGTH_SHORT).show();
@@ -494,7 +496,10 @@ public class RecognitionActivity extends AppCompatActivity {
 
     private void notifi_to_firestore(String Title, String Message){
         try{
-            Date date = new Date();
+            Date dateee = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            String date = sdf.format(dateee);
+
             FirebaseUser user = mauth.getCurrentUser();
             String UID = user.getUid().toString();
             String new_idDoc = UUID.randomUUID().toString();
@@ -503,7 +508,7 @@ public class RecognitionActivity extends AppCompatActivity {
             notice.put("uid_user", UID);
             notice.put("title", Title);
             notice.put("message", Message);
-            notice.put("time", date.getTime());
+            notice.put("time", date);
 
 
             db.collection("notification")
@@ -521,24 +526,40 @@ public class RecognitionActivity extends AppCompatActivity {
     }
     private void send_relativeid_to_server() throws JSONException {
         FirebaseUser user = mauth.getCurrentUser();
-        Date date = new Date();
-        List<String> list_relative = new ArrayList<>();
-        JSONObject json = new JSONObject();
+
+        Date dateee = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String date = sdf.format(dateee);
+
+
         db.collection("relationships")
                 .whereEqualTo("userId", user.getUid())
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for(DocumentSnapshot doc : queryDocumentSnapshots){
+                    List<String> list_relative = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         String relative_id = doc.get("familyUserId").toString();
                         list_relative.add(relative_id);
                     }
+
+                    JSONObject json = new JSONObject();
+
+
+                    try {
+                        json.put("warning", new JSONArray(list_relative));
+                        json.put("title", "Cảnh báo nguy hiểm");
+                        json.put("message", "Phát hiện nguy hiểm");
+                        json.put("date", date);
+
+                        webSocketClient.send(json.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error fetching relationships", e);
                 });
-        json.put("warning", list_relative);
-        json.put("title", "Cảnh báo nguy hiểm");
-        json.put("message", "Phát hiện nguy hiểm");
-        json.put("data", date.getTime());
-
-        webSocketClient.send(json.toString());
-
     }
+
 }
