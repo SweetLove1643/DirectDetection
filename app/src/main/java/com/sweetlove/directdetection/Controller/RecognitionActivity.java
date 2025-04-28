@@ -9,6 +9,7 @@ import android.graphics.ImageFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.service.quicksettings.Tile;
 import android.speech.tts.TextToSpeech;
 import android.util.Base64;
@@ -80,10 +81,11 @@ public class RecognitionActivity extends AppCompatActivity {
     private final Map<String, String> classTranslations = new HashMap<>();
     private FirebaseAuth mauth;
     private FirebaseFirestore db;
+    private ExecutorService executorService;
 
     private String[] warning = {
-            "người",
-            "điện thoại di động"
+//            "người",
+//            "điện thoại di động"
     };
 
     @Override
@@ -127,6 +129,10 @@ public class RecognitionActivity extends AppCompatActivity {
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         reconnectHandler = new Handler(Looper.getMainLooper());
+        cameraExecutor = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor(); // Khởi tạo ExecutorService
+        Log.d(TAG, "onCreate: ExecutorService initialized for camera and email");
+
 
         try{
             SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -148,13 +154,28 @@ public class RecognitionActivity extends AppCompatActivity {
         // Khởi tạo TextToSpeech với ngôn ngữ tiếng Việt
         textToSpeech = new TextToSpeech(this, status -> {
             if (status == TextToSpeech.SUCCESS) {
-                int result = textToSpeech.setLanguage(new Locale("vi", "VN"));
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "TextToSpeech: Tiếng Việt không được hỗ trợ");
-                    Toast.makeText(this, "Tiếng Việt không được hỗ trợ trên thiết bị này", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.i(TAG, "TextToSpeech initialized successfully with Vietnamese");
+
+                SharedPreferences preferences = getSharedPreferences("app_language", MODE_PRIVATE);
+                String language = preferences.getString("app_language", "vi");
+                if(language == "vi"){
+                    int result = textToSpeech.setLanguage(new Locale("vi", "VN"));
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e(TAG, "TextToSpeech: Tiếng Việt không được hỗ trợ");
+                        Toast.makeText(this, "Tiếng Việt không được hỗ trợ trên thiết bị này", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.i(TAG, "TextToSpeech initialized successfully with Vietnamese");
+                    }
+                }else{
+                    int result = textToSpeech.setLanguage(new Locale("en", "EN"));
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e(TAG, "TextToSpeech: English not support");
+                        Toast.makeText(this, "English not support in phone", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.i(TAG, "TextToSpeech initialized successfully with English");
+                    }
                 }
+
+
             } else {
                 Log.e(TAG, "TextToSpeech initialization failed");
                 Toast.makeText(this, "Không thể khởi tạo Text-to-Speech", Toast.LENGTH_SHORT).show();
@@ -323,7 +344,13 @@ public class RecognitionActivity extends AppCompatActivity {
                     JSONObject detection = detections.getJSONObject(i);
                     String className = detection.getString("class");
                     double confidence = detection.getDouble("confidence");
-                    String vietnameseClass = translateToVietnamese(className);
+
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    String language = preferences.getString("app_language", "vi");
+                    Log.d(TAG, "handleMessage: Current language: " + language);
+
+                    String vietnameseClass = language.equals("vi") ? translateToVietnamese(className) : className;
+
                     resultText.append("Class: ").append(vietnameseClass)
                             .append(", Confidence: ").append(String.format("%.2f", confidence))
                             .append("\n");
@@ -332,6 +359,7 @@ public class RecognitionActivity extends AppCompatActivity {
                     if(Arrays.asList(warning).contains(vietnameseClass)){
                         notifi_to_firestore("Cảnh báo nguy hiểm", "Phát hiện nguy hiểm: " + vietnameseClass);
                         send_relativeid_to_server();
+                        send_relative_to_email(vietnameseClass);
                     }
 
 
@@ -562,4 +590,55 @@ public class RecognitionActivity extends AppCompatActivity {
                 });
     }
 
+    private void send_relative_to_email(String detectedClass){
+        try{
+            FirebaseUser user = mauth.getCurrentUser();
+            db.collection("relationships")
+                    .whereEqualTo("userId", user.getUid())
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        for (DocumentSnapshot doc : queryDocumentSnapshots){
+                            String relative_id = doc.get("familyUserId").toString();
+                            Log.i(TAG, "Lay duoc id nguoi than: " + relative_id);
+
+                            // lay email dua vao id
+                            db.collection("users")
+                                    .document(relative_id)
+                                    .get()
+                                    .addOnSuccessListener(queryDocumentSnapshotss -> {
+                                            String relative_email = queryDocumentSnapshotss.get("email").toString();
+                                            Log.i(TAG, "Lay duoc email nguoi than: " + relative_email);
+                                            // gui email
+                                        // Chạy sendMail trong luồng background
+                                        executorService.execute(() -> {
+                                            try {
+                                                Log.d(TAG, "send_relative_to_email: Starting email sending in background thread");
+                                                GMailSender sender = new GMailSender("phanuan028@gmail.com", "thnd nnqx gfcb igly");
+                                                sender.sendMail(
+                                                        "Cảnh báo nguy hiểm",
+                                                        "Phát hiện nguy hiểm: " + detectedClass,
+                                                        "phanuan028@gmail.com",
+                                                        relative_email
+                                                );
+                                                Log.d(TAG, "send_relative_to_email: Email sent successfully to " + relative_email);
+                                                runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "Email sent to " + relative_email, Toast.LENGTH_SHORT).show());
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "send_relative_to_email: Error sending email to " + relative_email + ": ", e);
+                                                runOnUiThread(() -> Toast.makeText(RecognitionActivity.this, "Failed to send email: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                                            }
+                                        });
+
+                                    })
+                                    .addOnFailureListener(ee ->{
+                                        Log.e(TAG, "on send email: khong lay duoc relationships" + ee.getMessage());
+                                    });
+                        }
+                    })
+                    .addOnFailureListener(e ->{
+                        Log.e(TAG, "on send email: khong lay duoc relationships" + e.getMessage());
+                    });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
